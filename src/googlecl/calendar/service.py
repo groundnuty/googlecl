@@ -282,7 +282,7 @@ class CalendarServiceCL(gdata.calendar.service.CalendarService,
      attempts += 1
      try:
          response_feed = self.ExecuteBatch(request_feed,
-                                      gdata.calendar.service.DEFAULT_BATCH_URL +gsessionid)
+                                      (USER_BATCH_URL_FORMAT % calendar_user) + gsessionid)
      except gdata.service.RequestError as inst:
          thing = inst[0]
          if thing['status'] == 302 and attempts < 80:
