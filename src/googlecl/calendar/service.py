@@ -273,8 +273,30 @@ class CalendarServiceCL(gdata.calendar.service.CalendarService,
       event.content = atom.Content(text=event_str)
       event.quick_add = gdata.calendar.QuickAdd(value='true')
       request_feed.AddInsert(event, 'insert-' + event_str[0:5] + str(i))
-    response_feed = self.ExecuteBatch(request_feed,
-                                      USER_BATCH_URL_FORMAT % calendar_user)
+    trying = True
+    attempts = 0
+    sleep_secs = 1
+    gsessionid = ''
+    while trying:
+     trying = False
+     attempts += 1
+     try:
+         response_feed = self.ExecuteBatch(request_feed,
+                                      gdata.calendar.service.DEFAULT_BATCH_URL +gsessionid)
+     except gdata.service.RequestError as inst:
+         thing = inst[0]
+         if thing['status'] == 302 and attempts < 80:
+             trying = True
+             gsessionid=thing['body'][ thing['body'].find('?') :  
+thing['body'].find('">here</A>')]
+             print 'Received redirect - retrying in', sleep_secs, 'seconds with', gsessionid
+             import time
+             time.sleep(sleep_secs)
+             sleep_secs *= 2
+         else:
+             print 'too many RequestErrors, giving up'
+
+ 
     return response_feed.entry
 
   QuickAddEvent = quick_add_event
